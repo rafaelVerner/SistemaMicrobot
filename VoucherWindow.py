@@ -31,6 +31,7 @@ class VoucherWindow(QtWidgets.QWidget):
             for i in range(len(self.excel_manager.df)):
                 for j in range(len(self.excel_manager.df.columns)):
                     item = QtWidgets.QTableWidgetItem(str(self.excel_manager.df.iloc[i, j]))
+                    item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
                     self.table.setItem(i, j, item)
             
             # Expandir a tabela para preencher o espaço disponível
