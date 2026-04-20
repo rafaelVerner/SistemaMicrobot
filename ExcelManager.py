@@ -7,7 +7,8 @@ class ExcelManager:
 
     def load_excel(self, file_path):
         try:
-            self.df = pd.read_excel(file_path)
+            self.df = pd.read_excel(file_path, engine='openpyxl')
+            self.df = self.df.fillna(" ")
             self.file_path = file_path
             return True
         except Exception as e:
@@ -28,7 +29,7 @@ class ExcelManager:
     def save_excel(self):
         if self.df is not None:
             try:
-                self.df.to_excel(self.file_path, index=False)
+                self.df.fillna("").to_excel(self.file_path, index=False)
                 print("Excel file saved successfully.")
             except Exception as e:
                 print(f"Error saving Excel file: {e}")
@@ -56,3 +57,6 @@ class ExcelManager:
         else:
             print("No Excel file loaded. Please load an Excel file first.")
 
+
+    def get_columns(self, data):
+        return data.columns.tolist()
