@@ -58,5 +58,5 @@ class ExcelManager:
             print("No Excel file loaded. Please load an Excel file first.")
 
 
-    def get_columns(self, data):
-        return data.columns.tolist()
+    def get_columns(self):
+        return self.df.columns.tolist()
