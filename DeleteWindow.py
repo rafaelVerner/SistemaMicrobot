@@ -1,10 +1,10 @@
 from PySide6 import QtWidgets
 
 class DeleteWindow(QtWidgets.QWidget):
-    def __init__(self, excel_manager, table=None):
+    def __init__(self, excel_manager, on_data_deleted=None):
         super().__init__()
         self.excel_manager = excel_manager
-        self.table = table
+        self.on_data_deleted = on_data_deleted
         self.setWindowTitle("Excluir")
         self.setGeometry(100, 100, 400, 200)
     
@@ -29,12 +29,12 @@ class DeleteWindow(QtWidgets.QWidget):
         )
         
         if reply == QtWidgets.QMessageBox.Yes:
-            # Excluir do Excel Manager
             self.excel_manager.delete_data(row)
             self.excel_manager.save_excel()
             
-            # Excluir da tabela visual
-            self.table.removeRow(row)
+            
+            if self.on_data_deleted:
+                self.on_data_deleted()
             
             QtWidgets.QMessageBox.information(self, "Sucesso", "Linha excluída com sucesso!")
             self.close()

@@ -21,7 +21,10 @@ class UpdateWindow(QtWidgets.QWidget):
     def criar_campos(self):
         # Limpar layout anterior
         while self.main_layout.count():
-            self.main_layout.takeAt(0).widget().deleteLater()
+            item = self.main_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
         
         self.input_fields = {}
         
@@ -48,7 +51,7 @@ class UpdateWindow(QtWidgets.QWidget):
             
             # Obter o valor original da célula e usar como placeholder
             original_value = str(self.excel_manager.df.iloc[self.row_index][header]).strip()
-            input_field.setPlaceholderText(original_value)
+            input_field.setText(original_value)
             
             self.main_layout.addWidget(input_field)
             self.input_fields[header] = input_field
@@ -104,7 +107,6 @@ class UpdateWindow(QtWidgets.QWidget):
         
         self.excel_manager.update_data(self.row_index, data)
         self.excel_manager.save_excel()
-        self.close()
         
         # Mostrar mensagem de sucesso
         msg_box = QtWidgets.QMessageBox()
@@ -116,3 +118,13 @@ class UpdateWindow(QtWidgets.QWidget):
         # Recarregar tabela se callback foi definido
         if self.on_data_updated:
             self.on_data_updated()
+        
+        
+        self.close()
+        
+        QtWidgets.QMessageBox.information(
+            self,
+            "Sucesso",
+            "Dados atualizados com sucesso!"
+        )
+        

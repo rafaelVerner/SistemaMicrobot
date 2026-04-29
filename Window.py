@@ -10,8 +10,7 @@ class Window(QtWidgets.QWidget):
         super().__init__()
         self.stack = stack
         self.excel_manager = ExcelManager.ExcelManager()
-        self.deleteWindow = DeleteWindow.DeleteWindow(self.excel_manager)
-        self.addWindow = AddWindow.AddWindow(self.excel_manager, on_data_added=self.recarregar_tabela)
+        self.deleteWindow = DeleteWindow.DeleteWindow(self.excel_manager, on_data_deleted=self.recarregar_tabela)
         self.updateWindow = UpdateWindow.UpdateWindow(self.excel_manager, on_data_updated=self.recarregar_tabela)
         self.file_path = file_path
         self.selected_row = None
@@ -20,14 +19,14 @@ class Window(QtWidgets.QWidget):
         if(self.excel_manager.load_excel(self.file_path)):  
             self.criar_tabela()
         else:
-            error_label = QtWidgets.QLabel("Error loading Excel file.")
+            error_label = QtWidgets.QLabel("Erro ao carregar o arquivo Excel.")
             error_label.setAlignment(QtCore.Qt.AlignCenter)
             error_label.setStyleSheet("color: red; font-size: 25px;")
             self.layout.addWidget(error_label)
 
         btn_Adcionar = QtWidgets.QPushButton("Adicionar")
         btn_Adcionar.setMaximumWidth(180)
-        btn_Adcionar.clicked.connect(self.addWindow.show)
+        btn_Adcionar.clicked.connect(self.adicionar_linha)
         btn_Adcionar.setStyleSheet("""
                 QPushButton {
                     background-color: #2d3748;
@@ -185,9 +184,13 @@ class Window(QtWidgets.QWidget):
     
     
     def recarregar_tabela(self):
-        """Recarrega apenas os dados da tabela existente"""
-        # Recarregar dados do Excel
         self.excel_manager.load_excel(self.file_path)
+
+        self.table.setRowCount(0)  # limpa tudo
+        self.table.setRowCount(len(self.excel_manager.df))
+
+        self.preencher_tabela()
+        self.ajustar_colunas()
         
         
     def resizeEvent(self, event):
@@ -224,6 +227,11 @@ class Window(QtWidgets.QWidget):
         # Preencher a tabela existente com novos dados
         self.preencher_tabela()
         self.ajustar_colunas()
+        
+        
+    def adicionar_linha(self):
+        self.addWindow = AddWindow.AddWindow(self.excel_manager, on_data_added=self.recarregar_tabela)
+        self.addWindow.show()
     
 #-----Funções relacionadas à seleção de linha-----    
     

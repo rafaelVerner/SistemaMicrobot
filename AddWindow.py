@@ -5,8 +5,8 @@ class AddWindow(QtWidgets.QWidget):
     def __init__(self, excel_manager, on_data_added=None):
         super().__init__()
         self.excel_manager = excel_manager
-        self.on_data_added = on_data_added
         self.input_fields = {}
+        self.on_data_added = on_data_added
         self.setWindowTitle("Adicionar")
         self.setGeometry(100, 100, 400, 300)
         self.main_layout = QVBoxLayout()
@@ -19,7 +19,10 @@ class AddWindow(QtWidgets.QWidget):
     def criar_campos(self):
         # Limpar layout anterior
         while self.main_layout.count():
-            self.main_layout.takeAt(0).widget().deleteLater()
+            item = self.main_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
         
         self.input_fields = {}
         
@@ -87,7 +90,6 @@ class AddWindow(QtWidgets.QWidget):
         
         self.excel_manager.add_data(data)
         self.excel_manager.save_excel()
-        self.close()
         
         # Mostrar mensagem de sucesso
         msg_box = QtWidgets.QMessageBox()
@@ -100,3 +102,11 @@ class AddWindow(QtWidgets.QWidget):
         if self.on_data_added:
             self.on_data_added()
         
+
+        self.close()
+        
+        QtWidgets.QMessageBox.information(
+            self,
+            "Sucesso",
+            "Dados adicionados com sucesso!"
+        )
