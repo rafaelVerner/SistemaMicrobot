@@ -1,6 +1,6 @@
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import QHBoxLayout, QStackedWidget, QVBoxLayout
-import AgendamentoWindow
+import ReposicaoWindow
 import LoginWindow
 import VoucherWindow
 
@@ -45,9 +45,9 @@ class MainWindow(QtWidgets.QWidget):
             }
         """)
         
-        btn_Agendamento = QtWidgets.QPushButton("Agendamento")
-        btn_Agendamento.setMaximumWidth(250)
-        btn_Agendamento.setStyleSheet("""
+        btn_Reposicao = QtWidgets.QPushButton("Reposições")
+        btn_Reposicao.setMaximumWidth(250)
+        btn_Reposicao.setStyleSheet("""
             QPushButton {
                     background-color: #2d3748;
                     color: white;
@@ -65,7 +65,7 @@ class MainWindow(QtWidgets.QWidget):
         self.stack.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.tela1 = LoginWindow.LoginWindow(self.stack)
         self.tela2 = VoucherWindow.VoucherWindow(self.stack)
-        self.tela3 = AgendamentoWindow.AgendamentoWindow(self.stack)
+        self.tela3 = ReposicaoWindow.ReposicaoWindow(self.stack)
 
         self.stack.addWidget(self.tela1)
         self.stack.addWidget(self.tela2)
@@ -73,11 +73,11 @@ class MainWindow(QtWidgets.QWidget):
 
         btn_Voucher.clicked.connect(lambda: self.stack.setCurrentWidget(self.tela2))
         btn_Login.clicked.connect(lambda: self.stack.setCurrentWidget(self.tela1))
-        btn_Agendamento.clicked.connect(lambda: self.stack.setCurrentWidget(self.tela3))
+        btn_Reposicao.clicked.connect(lambda: self.stack.setCurrentWidget(self.tela3))
         
         menu.addWidget(btn_Login)
         menu.addWidget(btn_Voucher)
-        menu.addWidget(btn_Agendamento)
+        menu.addWidget(btn_Reposicao)
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)

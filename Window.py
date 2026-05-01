@@ -1,5 +1,7 @@
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QVBoxLayout
+from PySide6.QtPrintSupport import QPrinter
+from QtGui import QPainter, QPixmap
 import ExcelManager
 import DeleteWindow
 import AddWindow
@@ -85,11 +87,28 @@ class Window(QtWidgets.QWidget):
                 }
             """)
         
+        btn_arquivo = QtWidgets.QPushButton("Abrir Arquivo")
+        btn_arquivo.setMaximumWidth(180)
+        btn_arquivo.clicked.connect(self.abrir_arquivo)
+        btn_arquivo.setStyleSheet("""
+                QPushButton {
+                    background-color: #7ad154;  
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                }
+                QPushButton:hover {
+                    background-color: #82c963;
+                }
+            """)
+        
         buttons_layout = QtWidgets.QHBoxLayout()
         buttons_layout.addWidget(btn_Adcionar)
         buttons_layout.addWidget(btn_Atualizar)
         buttons_layout.addWidget(btn_Excluir)
         buttons_layout.addWidget(btn_PDF)
+        buttons_layout.addWidget(btn_arquivo)
         
         self.layout.addLayout(buttons_layout, stretch=0)
         self.setLayout(self.layout)
@@ -176,7 +195,7 @@ class Window(QtWidgets.QWidget):
             for i in range(self.table.columnCount()):
                 self.table.setColumnWidth(i, int(self.table.columnWidth(i) * scale))
 
-        # 🔥 correção final de pixel (ESSENCIAL)
+        
         diff = available_width - sum(self.table.columnWidth(i) for i in range(self.table.columnCount()))
         if diff != 0:
             last = self.table.columnCount() - 1
@@ -224,15 +243,36 @@ class Window(QtWidgets.QWidget):
         self.updateWindow.show()
     
         
-        # Preencher a tabela existente com novos dados
         self.preencher_tabela()
         self.ajustar_colunas()
         
-        
+    
     def adicionar_linha(self):
         self.addWindow = AddWindow.AddWindow(self.excel_manager, on_data_added=self.recarregar_tabela)
         self.addWindow.show()
-    
+        
+    def abrir_arquivo(self,): 
+        file_path, _= QtWidgets.QFileDialog.getOpenFileName(self, "Selecione um arquivo Excel", "", "Excel Files (*.xlsx *.xls)")
+        
+        if file_path:
+            self.file_path = file_path
+            if self.excel_manager.load_excel(self.file_path):
+                self.criar_tabela()
+            else:
+                error_label = QtWidgets.QLabel("Erro ao carregar o arquivo Excel.")
+                error_label.setAlignment(QtCore.Qt.AlignCenter)
+                error_label.setStyleSheet("color: red; font-size: 25px;")
+                self.layout.addWidget(error_label)
+                
+    def gerar_pdf(self):
+        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Salvar PDF", "", "PDF Files (*.pdf)")
+        if file_path:
+            printer = QPrinter(QPrinter.HighResolution)
+            printer.setOutputFormat(QPrinter.PdfFormat)
+            printer.setOutputFileName(file_path)
+
+           
+        
 #-----Funções relacionadas à seleção de linha-----    
     
     def voltar_para_celula(self):
@@ -243,4 +283,3 @@ class Window(QtWidgets.QWidget):
         self.table.clearSelection()
         self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.table.selectRow(row)
-            
