@@ -1,3 +1,5 @@
+import sys
+import os
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QVBoxLayout
 import ExcelManager
@@ -33,7 +35,7 @@ class Window(QtWidgets.QWidget):
             
         btn_Recarregar = QtWidgets.QPushButton()
         btn_Recarregar.setFixedSize(40, 40)
-        btn_Recarregar.setIcon(QtGui.QIcon(".\\assets\\icons\\reload.png"))
+        btn_Recarregar.setIcon(QtGui.QIcon(self.resource_path("./assets/icons/reload.png")))
         btn_Recarregar.setIconSize(QtCore.QSize(20, 20))
         btn_Recarregar.clicked.connect(self.recarregar_tabela)
         btn_Recarregar.setStyleSheet("""
@@ -341,7 +343,7 @@ class Window(QtWidgets.QWidget):
             
         pdf = fpdf.FPDF(orientation='L', unit='mm', format='A4')
         pdf.add_page()
-        logo_path = ".\\assets\\Logos\\logo.png"
+        logo_path = self.resource_path("./assets/logos/Logo.png")
         
         
         if logo_path:
@@ -432,3 +434,14 @@ class Window(QtWidgets.QWidget):
         self.table.clearSelection()
         self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.table.selectRow(row)
+        
+        
+#---------Função para pegar os caminhos--------
+
+    def resource_path(self,relative_path):
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)
