@@ -18,44 +18,44 @@ class ExcelManager:
         new_df = pd.DataFrame([data])
         if self.df is not None:
             if set(self.df.columns.tolist()) != set(new_df.columns.tolist()):
-                print("Data columns do not match the Excel file columns.")
-                return 
+                return False
             else:
                 self.df = pd.concat([self.df, new_df], ignore_index=True)
-                print("Data added successfully.")
+                return True
         else:
-            print("No Excel file loaded. Please load an Excel file first.")
+            return False
 
     def save_excel(self):
         if self.df is not None:
             try:
                 self.df.fillna("").to_excel(self.file_path, index=False)
-                print("Excel file saved successfully.")
+                return True
             except Exception as e:
-                print(f"Error saving Excel file: {e}")
+                return False
         else:
-            print("No Excel file loaded. Please load an Excel file first.")
-    
+            
+            return False
+
     def delete_data(self, index):
         if self.df is not None:
             try:
                 self.df = self.df.drop(index)
-                print("Data deleted successfully.")
+                return True
             except Exception as e:
-                print(f"Error deleting data: {e}")
+                return False
         else:
-            print("No Excel file loaded. Please load an Excel file first.")
+            return False
 
     def update_data(self, index, data):
         if self.df is not None:
             try:
                 for key, value in data.items():
                     self.df.at[index, key] = value
-                print("Data updated successfully.")
+                return True
             except Exception as e:
-                print(f"Error updating data: {e}")
+                return False
         else:
-            print("No Excel file loaded. Please load an Excel file first.")
+            return False
 
 
     def get_columns(self):
