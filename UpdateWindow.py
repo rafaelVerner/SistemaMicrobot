@@ -1,5 +1,5 @@
 from PySide6 import QtWidgets
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QLabel
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QLabel, QWidget
 
 class UpdateWindow(QtWidgets.QWidget):
     def __init__(self, excel_manager, on_data_updated=None):
@@ -9,7 +9,7 @@ class UpdateWindow(QtWidgets.QWidget):
         self.input_fields = {}
         self.row_index = None
         self.setWindowTitle("Atualizar")
-        self.setGeometry(100, 100, 400, 300)
+        self.setFixedSize(400, 500)
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
     
@@ -40,11 +40,19 @@ class UpdateWindow(QtWidgets.QWidget):
             self.main_layout.addWidget(label)
             return
         
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        
+        content_widget = QWidget()
+        
+        form_layout = QVBoxLayout(content_widget)
+        
         # Criar campos de entrada para cada coluna com placeholders dos dados originais
         for header in self.excel_manager.get_columns():
+            
             label = QLabel(header)
             label.setStyleSheet("font-size: 12px; font-weight: bold;")
-            self.main_layout.addWidget(label)
+            form_layout.addWidget(label)
             
             input_field = QLineEdit()
             input_field.setStyleSheet("font-size: 11px; padding: 5px;")
@@ -53,8 +61,12 @@ class UpdateWindow(QtWidgets.QWidget):
             original_value = str(self.excel_manager.df.iloc[self.row_index][header]).strip()
             input_field.setText(original_value)
             
-            self.main_layout.addWidget(input_field)
+            
+            form_layout.addWidget(input_field)
             self.input_fields[header] = input_field
+            
+        scroll.setWidget(content_widget)
+        self.main_layout.addWidget(scroll)
         
         # Botão de envio
         button_layout = QHBoxLayout()
@@ -92,8 +104,6 @@ class UpdateWindow(QtWidgets.QWidget):
         button_layout.addWidget(btn_cancelar)
         self.main_layout.addLayout(button_layout)
         
-        # Adicionar espaço em branco
-        self.main_layout.addStretch()
     
     def atualizar_dados(self):
         data = {}
@@ -122,9 +132,5 @@ class UpdateWindow(QtWidgets.QWidget):
         
         self.close()
         
-        QtWidgets.QMessageBox.information(
-            self,
-            "Sucesso",
-            "Dados atualizados com sucesso!"
-        )
+        
         

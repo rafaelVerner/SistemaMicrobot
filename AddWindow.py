@@ -1,5 +1,5 @@
 from PySide6 import QtWidgets
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QLabel
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QLabel, QWidget, QScrollArea
 
 class AddWindow(QtWidgets.QWidget):
     def __init__(self, excel_manager, on_data_added=None):
@@ -8,9 +8,11 @@ class AddWindow(QtWidgets.QWidget):
         self.input_fields = {}
         self.on_data_added = on_data_added
         self.setWindowTitle("Adicionar")
-        self.setGeometry(100, 100, 400, 300)
+        
+        self.setFixedSize(400, 500)
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
+        
     
     def showEvent(self, event):
         super().showEvent(event)
@@ -33,16 +35,38 @@ class AddWindow(QtWidgets.QWidget):
             return
         
         # Criar campos de entrada para cada coluna
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+
+        content_widget = QWidget()
+
+        form_layout = QVBoxLayout(content_widget)
+
+        # criar campos
         for header in self.excel_manager.get_columns():
-            label = QLabel(header)
-            label.setStyleSheet("font-size: 12px; font-weight: bold;")
-            self.main_layout.addWidget(label)
-            
-            input_field = QLineEdit()
-            input_field.setStyleSheet("font-size: 11px; padding: 5px;")
-            self.main_layout.addWidget(input_field)
-            
-            self.input_fields[header] = input_field
+
+                label = QLabel(header)
+                label.setStyleSheet("""
+                    font-size: 12px;
+                    font-weight: bold;
+                """)
+
+                input_field = QLineEdit()
+                input_field.setStyleSheet("""
+                    font-size: 11px;
+                    padding: 5px;
+                """)
+
+                form_layout.addWidget(label)
+                form_layout.addWidget(input_field)
+
+                self.input_fields[header] = input_field
+
+        
+
+        scroll.setWidget(content_widget)
+
+        self.main_layout.addWidget(scroll)
         
         # Botão de envio
         button_layout = QHBoxLayout()
@@ -81,7 +105,7 @@ class AddWindow(QtWidgets.QWidget):
         self.main_layout.addLayout(button_layout)
         
         # Adicionar espaço em branco
-        self.main_layout.addStretch()
+        
     
     def adicionar_dados(self):
         data = {}
@@ -105,8 +129,3 @@ class AddWindow(QtWidgets.QWidget):
 
         self.close()
         
-        QtWidgets.QMessageBox.information(
-            self,
-            "Sucesso",
-            "Dados adicionados com sucesso!"
-        )

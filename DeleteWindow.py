@@ -14,8 +14,12 @@ class DeleteWindow(QtWidgets.QWidget):
     
     def excluir_linha_selecionada(self, selected_row):
         """Excluir a linha selecionada da tabela"""
-        if self.table is None:
-            QtWidgets.QMessageBox.warning(self, "Erro", "Tabela não inicializada.")
+        if not hasattr(self, "table") or self.table is None:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Erro",
+                "Tabela não inicializada."
+            )
             return
         
         row = selected_row

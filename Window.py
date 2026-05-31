@@ -7,6 +7,7 @@ import DeleteWindow
 import AddWindow
 import UpdateWindow
 import fpdf
+from fpdf.fonts import FontFace
 
 class Window(QtWidgets.QWidget):
     def __init__(self, stack, file_path=None):
@@ -20,7 +21,6 @@ class Window(QtWidgets.QWidget):
         self.layout = QVBoxLayout()
         self.table = None
         self.error_label = None
-        
         
         if(self.excel_manager.load_excel(self.file_path)):  
             self.criar_tabela()
@@ -53,14 +53,14 @@ class Window(QtWidgets.QWidget):
             """)
         
         btn_Adcionar = QtWidgets.QPushButton("Adicionar")
-        btn_Adcionar.setMaximumWidth(180)
+        btn_Adcionar.setMaximumWidth(110)
         btn_Adcionar.clicked.connect(self.adicionar_linha)
         btn_Adcionar.setStyleSheet("""
                 QPushButton {
                     background-color: #2d3748;
                     color: white;
                     border: none;
-                    padding: 10px 20px;
+                    padding: 10px 10px;
                     border-radius: 5px;
                 }
                 QPushButton:hover {
@@ -69,14 +69,14 @@ class Window(QtWidgets.QWidget):
             """)
         
         btn_Atualizar = QtWidgets.QPushButton("Atualizar")
-        btn_Atualizar.setMaximumWidth(180)
+        btn_Atualizar.setMaximumWidth(110)
         btn_Atualizar.clicked.connect(self.atualizar_linha)
         btn_Atualizar.setStyleSheet("""
                 QPushButton {
                     background-color: #2d3748;
                     color: white;
                     border: none;
-                    padding: 10px 20px;
+                    padding: 10px 10px;
                     border-radius: 5px;
                 }
                 QPushButton:hover {
@@ -85,13 +85,28 @@ class Window(QtWidgets.QWidget):
             """)
         btn_Excluir = QtWidgets.QPushButton("Excluir")
         btn_Excluir.clicked.connect(self.excluir_linha)
-        btn_Excluir.setMaximumWidth(180)
+        btn_Excluir.setMaximumWidth(110)
         btn_Excluir.setStyleSheet("""
                 QPushButton {
                     background-color: #2d3748;
                     color: white;
                     border: none;
-                    padding: 10px 20px;
+                    padding: 10px 10px;
+                    border-radius: 5px;
+                }
+                QPushButton:hover {
+                    background-color: #4a5568;
+                }
+            """)
+        btn_backup = QtWidgets.QPushButton("Fazer Backup")
+        btn_backup.setMaximumWidth(110)
+        btn_backup.clicked.connect(self.fazer_backup)
+        btn_backup.setStyleSheet("""
+                QPushButton {
+                    background-color: #2d3748;  
+                    color: white;
+                    border: none;
+                    padding: 10px 10px;
                     border-radius: 5px;
                 }
                 QPushButton:hover {
@@ -99,14 +114,14 @@ class Window(QtWidgets.QWidget):
                 }
             """)
         btn_PDF = QtWidgets.QPushButton("Gerar PDF")
-        btn_PDF.setMaximumWidth(180)
+        btn_PDF.setMaximumWidth(110)
         btn_PDF.clicked.connect(self.gerar_pdf)
         btn_PDF.setStyleSheet("""
                 QPushButton {
                     background-color: #ff4d4d;
                     color: white;
                     border: none;
-                    padding: 10px 20px;
+                    padding: 10px 10px;
                     border-radius: 5px;
                 }
                 QPushButton:hover {
@@ -115,14 +130,14 @@ class Window(QtWidgets.QWidget):
             """)
         
         btn_arquivo = QtWidgets.QPushButton("Abrir Arquivo")
-        btn_arquivo.setMaximumWidth(180)
+        btn_arquivo.setMaximumWidth(110)
         btn_arquivo.clicked.connect(self.abrir_arquivo)
         btn_arquivo.setStyleSheet("""
                 QPushButton {
                     background-color: #7ad154;  
                     color: white;
                     border: none;
-                    padding: 10px 20px;
+                    padding: 10px 10px;
                     border-radius: 5px;
                 }
                 QPushButton:hover {
@@ -135,6 +150,7 @@ class Window(QtWidgets.QWidget):
         buttons_layout.addWidget(btn_Adcionar)
         buttons_layout.addWidget(btn_Atualizar)
         buttons_layout.addWidget(btn_Excluir)
+        buttons_layout.addWidget(btn_backup)
         buttons_layout.addWidget(btn_PDF)
         buttons_layout.addWidget(btn_arquivo)
         
@@ -295,6 +311,10 @@ class Window(QtWidgets.QWidget):
             msg_box.exec()
             return
         self.deleteWindow.excluir_linha_selecionada(self.selected_row)
+        self.selected_row = None
+        
+        self.preencher_tabela()
+        self.ajustar_colunas()
     
     def atualizar_linha(self):
         if self.selected_row is None:
@@ -307,6 +327,7 @@ class Window(QtWidgets.QWidget):
         
         self.updateWindow.carregar_dados(self.selected_row)
         self.updateWindow.show()
+        self.selected_row = None
     
         
         self.preencher_tabela()
@@ -329,107 +350,185 @@ class Window(QtWidgets.QWidget):
                 self.layout.removeWidget(self.error_label)
                 self.error_label.deleteLater()
             self.atualizar_tabela()
-
+            self.deleteWindow.set_table(self.table)
             
                 
     def gerar_pdf(self):
-        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Salvar PDF", "", "PDF Files (*.pdf)")
-        
+        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Salvar PDF",
+            "",
+            "PDF Files (*.pdf)"
+        )
+
         if not file_path:
             return
-        
+
         if not file_path.endswith('.pdf'):
             file_path += '.pdf'
-            
-        pdf = fpdf.FPDF(orientation='L', unit='mm', format='A4')
+
+        pdf = fpdf.FPDF(
+            orientation='L',
+            unit='mm',
+            format='A4'
+        )
+
+        pdf.set_auto_page_break(auto=True, margin=15)
+
         pdf.add_page()
+
         logo_path = self.resource_path("./assets/logos/Logo.png")
-        
-        
-        if logo_path:
-            pdf.image(logo_path, x=20, y=0, w=45)
-            
-        pdf.set_font('Arial', 'B', 35)
-        pdf.multi_cell(0, 10, "Relatório de Dados", border=0,  align='C')
-        
+
+        if os.path.exists(logo_path):
+            pdf.image(logo_path, x=15, y=5, w=40)
+
+        # ===== TÍTULO =====
+        pdf.set_font('Helvetica', 'B', 24)
+        pdf.cell(
+            0,
+            15,
+            "Relatório de Dados",
+            align='C',
+            new_x="LMARGIN",
+            new_y="NEXT"
+        )
+
         pdf.ln(10)
-        
-        page_width = pdf.w - 20
 
         col_count = self.table.columnCount()
 
-        # largura baseada no maior conteúdo da coluna
+        # ===== LARGURA DAS COLUNAS =====
+        
+        
+        page_width = pdf.epw
+
+        col_count = self.table.columnCount()
+
         col_widths = []
 
+        pdf.set_font("Helvetica", size=7)
+
         for col in range(col_count):
+
             header = self.table.horizontalHeaderItem(col).text()
 
             max_width = pdf.get_string_width(header)
 
             for row in range(self.table.rowCount()):
+
                 item = self.table.item(row, col)
 
                 if item:
-                    text_width = pdf.get_string_width(item.text())
+
+                    text = item.text().replace("\n", " ")
+
+                    text_width = pdf.get_string_width(text)
 
                     if text_width > max_width:
                         max_width = text_width
 
-            col_widths.append(max_width + 8)
-        
+            # margem interna
+            col_widths.append(max_width + 6)
+
+        # soma total
         total_width = sum(col_widths)
 
+        # proporcional à largura da página
         col_widths = [
             (w / total_width) * page_width
             for w in col_widths
-        ]
-                
-        pdf.set_line_width(0.3)
-        pdf.set_draw_color(0, 0, 0)
-        
-        pdf.set_text_color(255, 255, 255)
-        pdf.set_font('Arial', 'B', 10)
-        pdf.set_fill_color(45, 55, 72)
-        for col in range(col_count):
-            header_text = self.table.horizontalHeaderItem(col).text()
-            pdf.cell(col_widths[col], 8, header_text, border=1, align='C', fill=True)
-            
-        pdf.ln()
-        pdf.set_font('Arial', '', 7)
-        
-        pdf.set_text_color(0, 0, 0)
-        for row in range(self.table.rowCount()):
+]
+
+        # ===== TABELA =====
+        with pdf.table(
+            borders_layout="ALL",
+            cell_fill_mode="ROWS",
+            col_widths=col_widths,
+            headings_style=FontFace(
+                color=(255, 255, 255),
+                fill_color=(45, 55, 72),
+                emphasis="B"
+            ),
+            line_height=6,
+            text_align="CENTER",
+        ) as table:
+
+            # ===== CABEÇALHO =====
+            row = table.row()
+
             for col in range(col_count):
-                cell_item = self.table.item(row, col)
-                cell_text = cell_item.text() if cell_item else ""
-                
-                cell_text = cell_text.replace('\n', ' ')
-                
-                if cell_text.lower() == 'sim':
-                    pdf.set_fill_color(198, 239, 206)
-                    fill = True
-                elif cell_text.lower() in ('não', 'nao'):
-                    pdf.set_fill_color(255, 199, 206)
-                    fill = True
-                else:
-                    fill = False
-                
-                pdf.cell(col_widths[col], 6, cell_text, border=1, align='C', fill=fill)
-            pdf.ln()
-            
-        pdf.output(file_path)    
-            
+                header_text = self.table.horizontalHeaderItem(col).text()
+                pdf.set_font("Helvetica", "B", size=8)
+                row.cell(header_text)
+
+            # ===== DADOS =====
+            for row_index in range(self.table.rowCount()):
+
+                pdf.set_font("Helvetica", size=7)
+
+                row = table.row()
+
+                for col in range(col_count):
+
+                    item = self.table.item(row_index, col)
+
+                    text = item.text() if item else ""
+
+                    text = text.replace("\n", " ")
+
+                    lower = text.lower()
+
+                    # Cor dinâmica
+                    style = {}
+
+                    style = None
+
+                    if lower == "sim":
+                        style = FontFace(fill_color=(198, 239, 206),
+                                    size_pt=7,
+                                    emphasis=None
+                                )
+
+                    elif lower in ("não", "nao"):
+                        style = FontFace(fill_color=(255, 199, 206),
+                                     size_pt=7,
+                                    emphasis=None
+                                )
+                        
+                    
+                    row.cell(text, style=style)
+
+        pdf.output(file_path)
+
         QtWidgets.QMessageBox.information(
-            self, "Sucesso", "PDF gerado com sucesso!"
+            self,
+            "Sucesso",
+            "PDF gerado com sucesso!"
         )
+        
+    def fazer_backup(self):
+        if self.excel_manager.save_backup():
+            QtWidgets.QMessageBox.information(
+                self,
+                "Sucesso",
+                "Backup criado com sucesso!"
+            )
+        else:
+            QtWidgets.QMessageBox.critical(
+                self,
+                "Erro",
+                "Falha ao criar backup."
+            )
            
         
 #-----Funções relacionadas à seleção de linha-----    
     
-    def voltar_para_celula(self):
+    def voltar_para_celula(self, row, col, *_):
         self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
+        self.selected_row = None
+        self.table.setCurrentCell(row, col)
     
-    def selecionar_linha(self, row):
+    def selecionar_linha(self, row, col, *_):
         self.selected_row = row
         self.table.clearSelection()
         self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
